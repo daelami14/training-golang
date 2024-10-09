@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
+	"training-golang/assignment-golang/user-server/entity"
 
 	grpcHandler "solution1/assignment-2-simple-ewallet-system/user-service/handler/grpc"
 	pb "solution1/assignment-2-simple-ewallet-system/user-service/proto/user_service/v1"
@@ -13,7 +15,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 func main() {
@@ -22,14 +23,19 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	dsn := "postgresql://postgres:postgres@localhost:5432/postgres"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "assignment2_user.", // schema name
-			SingularTable: false,
-		}})
+	dsn := "postgresql://postgres:admin@localhost:5432/user_db"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
+
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
+	}
+
+	// Migrate the schema
+	err = db.AutoMigrate(entity.User{})
+	if err != nil {
+		fmt.Println("Failed to migrate database schema:", err)
+	} else {
+		fmt.Println("Database schema migrated successfully")
 	}
 
 	repo := postgres_gorm.NewUserRepository(db) // Initialize your repository implementation

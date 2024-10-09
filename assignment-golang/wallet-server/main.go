@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 
 	"training-golang/assignment-golang/wallet-server/entity"
 	grpcHandler "training-golang/assignment-golang/wallet-server/handler/grpc"
@@ -24,12 +23,9 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	dsn := "postgresql://postgres:postgres@localhost:5432/postgres"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "assignment2_wallet.", // schema name
-			SingularTable: false,
-		}})
+	dsn := "postgresql://postgres:admin@localhost:5432/wallet_db"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
+
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
